@@ -1,0 +1,27 @@
+rootProject.name = 'how-to-gradle-project-variations'
+
+// define versions of javax.servlet:servlet-api for which to generate variations of the app
+def variations = ['2.3', '2.4', '2.5']
+
+def projects = variations.collect { "${rootProject.name}-${it}" }
+
+// include the app subproject with the servlet definitions
+include('app')
+// include a subproject for each variation of the servlet-api
+include(*projects)
+
+// create a subproject directory in directory "variations" for each variation
+projects.findAll({ it != 'app' }).collect({ project(":${it}") }).forEach {
+  // extract variation encoded in the project name
+  def variation = it.name.substring(rootProject.name.length() + 1)
+  // group these subprojects in the "variations" directory
+  def dir = new File("variations/${variation}")
+  // make sure the subproject directory exists
+  assert !dir.isFile()
+  if (!dir.exists()) {
+    assert dir.mkdirs()
+  }
+  // at this time, we could generate files and properties in the subproject directory
+  // set the project's directory
+  it.projectDir = dir
+}

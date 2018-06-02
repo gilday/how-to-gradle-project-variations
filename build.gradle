@@ -1,0 +1,29 @@
+subprojects {
+  apply plugin: 'java'
+  apply plugin: 'war'
+  group = 'com.johnathangilday'
+  version = '1.0'
+  repositories {
+    mavenCentral()
+  }
+}
+
+configure(subprojects.findAll { it.name != 'app' }) {
+  // extract variation encoded in the project name
+  def variation = project.name.substring(rootProject.name.length() + 1)
+  dependencies {
+    // use the variation to specify the servlet-api version
+    compile "javax.servlet:servlet-api:${variation}"
+    // include the app project where the web application servlet is defined
+    compile project(':app')
+  }
+}
+
+project('app') {
+  dependencies {
+    // the app project uses a version of the servlet-api
+    // compileOnly because we do not want to include this as a transitive dependency - the subprojects
+    // will bring their own version of the servlet-api
+    compileOnly 'javax.servlet:servlet-api:2.5'
+  }
+}
